@@ -32,7 +32,7 @@ RUN apk update && \
 
 # Ensure necessary directories have appropriate permissions
 RUN mkdir -p /var/cache/nginx && chmod 777 /var/cache/nginx
-RUN chmod -R 777 /usr/share/nginx/html  #Ensure Nginx
+RUN chmod -R 777 /usr/share/nginx/html
 
 # Copy the built application from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
