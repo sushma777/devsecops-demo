@@ -116,17 +116,18 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false
+          push: false  # Set to false to avoid pushing before scanning
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          load: true
-      
+          load: true  # Make sure the image is loaded into Docker so Trivy can access it
+
+      # Ensure the image is scanned after it's built locally
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}  # Match the image tag format
           format: 'table'
-          exit-code: '1'
+          exit-code: '1'  # Ensure the pipeline fails if vulnerabilities are found
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
@@ -135,10 +136,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: true  # Push the image to the registry after successful scan
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      
+        
       - name: Set image tag output
         id: set_output
         run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
