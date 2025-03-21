@@ -14,31 +14,45 @@ spec:
       labels:
         app: tic-tac-toe
     spec:
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/cache/nginx && chmod 777 /var/cache/nginx
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
       containers:
-      - name: tic-tac-toe
-        image: ghcr.io/sushma777/devsecops-demo:sha-186fa7a0ff79eeae4e993fa3c412b034dae01671
-        # Image will be automatically updated by CI/CD pipeline
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        resources:
-          limits:
-            cpu: "0.5"
-            memory: "512Mi"
-          requests:
-            cpu: "0.2"
-            memory: "256Mi"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: tic-tac-toe
+          image: ghcr.io/sushma777/devsecops-demo:sha-186fa7a0ff79eeae4e993fa3c412b034dae01671
+          # Image will be automatically updated by CI/CD pipeline
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
+            requests:
+              cpu: "0.2"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
       imagePullSecrets:
-      - name: github-container-registry
+        - name: github-container-registry
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
