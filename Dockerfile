@@ -10,8 +10,12 @@ RUN apk update && apk upgrade --no-cache && \
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy source code and build app
+# Copy the rest of the application code
 COPY . .
+
+# Ensure the build script exists and run the build
+RUN if [ ! -f "package.json" ]; then echo "No package.json found"; exit 1; fi
+RUN if ! grep -q '"build"' package.json; then echo "No build script in package.json"; exit 1; fi
 RUN npm run build
 
 # Production Stage
