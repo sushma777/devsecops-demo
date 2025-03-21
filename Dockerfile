@@ -3,7 +3,6 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-RUN npm audit fix --force
 COPY . .
 RUN npm run build
 
