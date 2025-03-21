@@ -28,7 +28,7 @@ RUN apk update && \
     libxslt=1.1.42-r2
 
 # Create a non-root user for running nginx, but only if they don't already exist
-RUN addgroup -S nginx || true && adduser -S -G nginx nginx || true
+
 
 # Copy the built application from the build stage (use dist instead of build for Vite)
 COPY --from=build /app/dist /usr/share/nginx/html
