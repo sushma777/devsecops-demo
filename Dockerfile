@@ -3,6 +3,9 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+RUN apk update && apk upgrade \
+    && apk add --no-cache libexpat libxml2 libxslt
+    
 COPY . .
 RUN npm run build
 
