@@ -1,5 +1,5 @@
-# Use node image as base for building application
-FROM node:20-alpine AS build
+# Use the official Node.js image to build the application
+FROM node:16 AS build
 
 # Set working directory
 WORKDIR /app
@@ -19,6 +19,7 @@ RUN npm run build
 # Use nginx image as base for serving the application
 FROM nginx:alpine
 
+# Set the user to root to have necessary permissions for file system modification
 USER root
 
 # Install necessary packages
@@ -29,17 +30,15 @@ RUN apk update && \
     libxml2=2.13.4-r5 \
     libxslt=1.1.42-r2
 
-# Create a non-root user for running nginx, but only if they don't already exist
+# Ensure necessary directories have appropriate permissions
+RUN mkdir -p /var/cache/nginx && chmod 777 /var/cache/nginx
+RUN chmod -R 777 /usr/share/nginx/html  # Ensure Nginx's HTML directory is writable
 
-
-# Copy the built application from the build stage (use dist instead of build for Vite)
+# Copy the built application from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose the necessary port
 EXPOSE 80
-
-# Run nginx as the non-root user
-USER nginx
 
 # Start nginx server
 CMD ["nginx", "-g", "daemon off;"]
