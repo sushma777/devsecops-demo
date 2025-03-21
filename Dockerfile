@@ -19,6 +19,8 @@ RUN npm run build
 # Use nginx image as base for serving the application
 FROM nginx:alpine
 
+USER root
+
 # Install necessary packages
 RUN apk update && \
     apk upgrade --no-cache && \
