@@ -30,8 +30,8 @@ RUN apk update && \
 # Create a non-root user for running nginx, but only if they don't already exist
 RUN addgroup -S nginx || true && adduser -S -G nginx nginx || true
 
-# Copy the built application from the build stage
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy the built application from the build stage (use dist instead of build for Vite)
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose the necessary port
 EXPOSE 80
