@@ -1,27 +1,25 @@
-# Build stage
+# Use node image as base for building application
 FROM node:20-alpine AS build
 
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json files
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
-# Run `npm audit fix` to automatically resolve vulnerabilities
-RUN npm audit fix --legacy-peer-deps
-
-# Copy the rest of the application files
+# Copy all source files
 COPY . .
 
-# Build the project
+# Build the application (if necessary)
 RUN npm run build
 
-# Production stage
+# Use nginx image as base for serving the application
 FROM nginx:alpine
 
-# Upgrade Alpine packages to address vulnerabilities
+# Install necessary packages
 RUN apk update && \
     apk upgrade --no-cache && \
     apk add --no-cache \
@@ -29,20 +27,17 @@ RUN apk update && \
     libxml2=2.13.4-r5 \
     libxslt=1.1.42-r2
 
-# Create a non-root user for running nginx
-RUN addgroup -S nginx && adduser -S -G nginx nginx
+# Create a non-root user for running nginx, but only if they don't already exist
+RUN addgroup -S nginx || true && adduser -S -G nginx nginx || true
 
-# Copy the built files from the build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy the built application from the build stage
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Change ownership of the files to the nginx user
-RUN chown -R nginx:nginx /usr/share/nginx/html
-
-# Expose port 80 for the application
+# Expose the necessary port
 EXPOSE 80
 
-# Switch to the non-root user
+# Run nginx as the non-root user
 USER nginx
 
-# Start nginx
+# Start nginx server
 CMD ["nginx", "-g", "daemon off;"]
